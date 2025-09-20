@@ -287,6 +287,11 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="skeletalMuscle">Current Skeletal Muscle Mass (kg) - optional</label>
+                        <input type="number" id="skeletalMuscle" step="0.1" min="10" max="80" placeholder="If known from scan">
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="activityLevel">Activity Level</label>
                         <select id="activityLevel" required>
                             <option value="">Select activity level</option>
@@ -307,6 +312,18 @@
                             <option value="endurance">Endurance</option>
                             <option value="crossfit">CrossFit/Functional</option>
                             <option value="general">General Fitness</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dietDuration">Diet Duration (weeks)</label>
+                        <select id="dietDuration" required>
+                            <option value="">Select duration</option>
+                            <option value="6">6 weeks (Short cut)</option>
+                            <option value="8">8 weeks (Standard)</option>
+                            <option value="12">12 weeks (Extended)</option>
+                            <option value="16">16 weeks (Contest prep)</option>
+                            <option value="20">20+ weeks (Slow cut)</option>
                         </select>
                     </div>
                     
