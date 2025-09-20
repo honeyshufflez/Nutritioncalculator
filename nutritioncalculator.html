@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Trainer Nutrition Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .input-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .results-section {
+            padding: 40px;
+            background: white;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .phases {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .phase-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .phase-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .phase-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .phase-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .macro-breakdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .macro-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nutrition Calculator</h1>
+            <p>Evidence-Based Energy Balance & Macronutrient Planning</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <form id="nutritionForm">
+                    <div class="form-group">
+                        <label for="age">Age (years)</label>
+                        <input type="number" id="age" min="15" max="80" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="male" name="gender" value="male" required>
+                                <label for="male">Male</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="female" name="gender" value="female" required>
+                                <label for="female">Female</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" step="0.1" min="30" max="200" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" min="140" max="220" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bodyFat">Body Fat % (optional)</label>
+                        <input type="number" id="bodyFat" step="0.1" min="5" max="50">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="activityLevel">Activity Level</label>
+                        <select id="activityLevel" required>
+                            <option value="">Select activity level</option>
+                            <option value="1.2">Sedentary (desk job, no exercise)</option>
+                            <option value="1.375">Light (1-3 workouts/week)</option>
+                            <option value="1.55">Moderate (3-5 workouts/week)</option>
+                            <option value="1.725">High (6-7 workouts/week)</option>
+                            <option value="1.9">Extreme (2x/day, intense training)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="trainingType">Primary Training Type</label>
+                        <select id="trainingType" required>
+                            <option value="">Select training type</option>
+                            <option value="strength">Strength/Powerlifting</option>
+                            <option value="bodybuilding">Bodybuilding</option>
+                            <option value="endurance">Endurance</option>
+                            <option value="crossfit">CrossFit/Functional</option>
+                            <option value="general">General Fitness</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="calculate-btn">Calculate Nutrition Plan</button>
+                </form>
+            </div>
+            
+            <div class="results-section">
+                <div id="results" style="display: none;">
+                    <div class="results">
+                        <h3 style="margin-bottom: 20px; color: #2c3e50;">Base Metabolic Information</h3>
+                        <div class="result-item">
+                            <span class="result-label">BMR (Basal Metabolic Rate)</span>
+                            <span class="result-value" id="bmr">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">TDEE (Total Daily Energy)</span>
+                            <span class="result-value" id="tdee">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Lean Body Mass</span>
+                            <span class="result-value" id="lbm">-</span>
+                        </div>
+                    </div>
+                    
+                    <div class="phases">
+                        <div class="phase-card">
+                            <div class="phase-title" style="color: #e74c3c;">🔥 Fat Loss Phase</div>
+                            <div class="phase-detail">
+                                <span>Calories:</span>
+                                <span id="fatLossCalories">-</span>
+                            </div>
+                            <div class="phase-detail">
+                                <span>Deficit:</span>
+                                <span id="fatLossDeficit">-</span>
+                            </div>
+                            <div class="macro-breakdown">
+                                <div class="macro-item">
+                                    <span>Protein:</span>
+                                    <span id="fatLossProtein">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Fat:</span>
+                                    <span id="fatLossFat">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Carbs:</span>
+                                    <span id="fatLossCarbs">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="phase-card">
+                            <div class="phase-title" style="color: #27ae60;">⚖️ Maintenance Phase</div>
+                            <div class="phase-detail">
+                                <span>Calories:</span>
+                                <span id="maintenanceCalories">-</span>
+                            </div>
+                            <div class="macro-breakdown">
+                                <div class="macro-item">
+                                    <span>Protein:</span>
+                                    <span id="maintenanceProtein">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Fat:</span>
+                                    <span id="maintenanceFat">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Carbs:</span>
+                                    <span id="maintenanceCarbs">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="phase-card">
+                            <div class="phase-title" style="color: #3498db;">💪 Lean Gain Phase</div>
+                            <div class="phase-detail">
+                                <span>Calories:</span>
+                                <span id="bulkCalories">-</span>
+                            </div>
+                            <div class="phase-detail">
+                                <span>Surplus:</span>
+                                <span id="bulkSurplus">-</span>
+                            </div>
+                            <div class="macro-breakdown">
+                                <div class="macro-item">
+                                    <span>Protein:</span>
+                                    <span id="bulkProtein">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Fat:</span>
+                                    <span id="bulkFat">-</span>
+                                </div>
+                                <div class="macro-item">
+                                    <span>Carbs:</span>
+                                    <span id="bulkCarbs">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="warning">
+                        <strong>Professional Note:</strong> These calculations provide evidence-based starting points. Monitor client progress and adjust based on individual response. Consider referring to registered dietitians for complex medical conditions or eating disorders.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('nutritionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateNutrition();
+        });
+
+        function calculateNutrition() {
+            // Get form values
+            const age = parseInt(document.getElementById('age').value);
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseInt(document.getElementById('height').value);
+            const bodyFat = parseFloat(document.getElementById('bodyFat').value) || null;
+            const activityLevel = parseFloat(document.getElementById('activityLevel').value);
+            const trainingType = document.getElementById('trainingType').value;
+
+            // Calculate BMR using Mifflin-St Jeor equation
+            let bmr;
+            if (gender === 'male') {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+            } else {
+                bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            }
+
+            // Calculate TDEE
+            const tdee = bmr * activityLevel;
+
+            // Calculate lean body mass
+            let lbm;
+            if (bodyFat) {
+                lbm = weight * (1 - bodyFat / 100);
+            } else {
+                // Estimate using Boer formula if no body fat provided
+                if (gender === 'male') {
+                    lbm = (0.407 * weight) + (0.267 * height / 100) - 19.2;
+                } else {
+                    lbm = (0.252 * weight) + (0.473 * height / 100) - 48.3;
+                }
+            }
+
+            // Calculate protein requirements based on training type and goal
+            const proteinRequirements = getProteinRequirements(weight, lbm, trainingType);
+
+            // Calculate phases
+            const fatLossCalories = Math.round(tdee * 0.8); // 20% deficit
+            const maintenanceCalories = Math.round(tdee);
+            const bulkCalories = Math.round(tdee * 1.1); // 10% surplus
+
+            // Calculate macros for each phase
+            const fatLossMacros = calculateMacros(fatLossCalories, proteinRequirements.fatLoss, weight, 'cut');
+            const maintenanceMacros = calculateMacros(maintenanceCalories, proteinRequirements.maintenance, weight, 'maintenance');
+            const bulkMacros = calculateMacros(bulkCalories, proteinRequirements.bulk, weight, 'bulk');
+
+            // Display results
+            document.getElementById('bmr').textContent = Math.round(bmr) + ' calories';
+            document.getElementById('tdee').textContent = Math.round(tdee) + ' calories';
+            document.getElementById('lbm').textContent = lbm.toFixed(1) + ' kg';
+
+            // Fat Loss Phase
+            document.getElementById('fatLossCalories').textContent = fatLossCalories + ' cal';
+            document.getElementById('fatLossDeficit').textContent = Math.round(tdee - fatLossCalories) + ' cal';
+            document.getElementById('fatLossProtein').textContent = fatLossMacros.protein + 'g (' + Math.round(fatLossMacros.protein * 4) + ' cal)';
+            document.getElementById('fatLossFat').textContent = fatLossMacros.fat + 'g (' + Math.round(fatLossMacros.fat * 9) + ' cal)';
+            document.getElementById('fatLossCarbs').textContent = fatLossMacros.carbs + 'g (' + Math.round(fatLossMacros.carbs * 4) + ' cal)';
+
+            // Maintenance Phase
+            document.getElementById('maintenanceCalories').textContent = maintenanceCalories + ' cal';
+            document.getElementById('maintenanceProtein').textContent = maintenanceMacros.protein + 'g (' + Math.round(maintenanceMacros.protein * 4) + ' cal)';
+            document.getElementById('maintenanceFat').textContent = maintenanceMacros.fat + 'g (' + Math.round(maintenanceMacros.fat * 9) + ' cal)';
+            document.getElementById('maintenanceCarbs').textContent = maintenanceMacros.carbs + 'g (' + Math.round(maintenanceMacros.carbs * 4) + ' cal)';
+
+            // Bulk Phase
+            document.getElementById('bulkCalories').textContent = bulkCalories + ' cal';
+            document.getElementById('bulkSurplus').textContent = Math.round(bulkCalories - tdee) + ' cal';
+            document.getElementById('bulkProtein').textContent = bulkMacros.protein + 'g (' + Math.round(bulkMacros.protein * 4) + ' cal)';
+            document.getElementById('bulkFat').textContent = bulkMacros.fat + 'g (' + Math.round(bulkMacros.fat * 9) + ' cal)';
+            document.getElementById('bulkCarbs').textContent = bulkMacros.carbs + 'g (' + Math.round(bulkMacros.carbs * 4) + ' cal)';
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function getProteinRequirements(weight, lbm, trainingType) {
+            let base = {
+                fatLoss: 2.0,      // Higher protein during cut to preserve muscle
+                maintenance: 1.6,   // Moderate protein for maintenance
+                bulk: 1.8          // Slightly higher for muscle building
+            };
+
+            // Adjust based on training type
+            switch(trainingType) {
+                case 'strength':
+                case 'powerlifting':
+                    base.fatLoss = 2.2;
+                    base.bulk = 2.0;
+                    break;
+                case 'bodybuilding':
+                    base.fatLoss = 2.4;
+                    base.bulk = 2.2;
+                    break;
+                case 'endurance':
+                    base.fatLoss = 1.8;
+                    base.maintenance = 1.4;
+                    base.bulk = 1.6;
+                    break;
+                case 'crossfit':
+                    base.fatLoss = 2.0;
+                    base.bulk = 1.8;
+                    break;
+            }
+
+            return {
+                fatLoss: Math.round(weight * base.fatLoss),
+                maintenance: Math.round(weight * base.maintenance),
+                bulk: Math.round(weight * base.bulk)
+            };
+        }
+
+        function calculateMacros(calories, protein, weight, phase) {
+            // Protein calories
+            const proteinCals = protein * 4;
+            
+            // Fat calories (20-30% of total, higher during cuts for satiety)
+            let fatPercentage;
+            switch(phase) {
+                case 'cut':
+                    fatPercentage = 0.28;
+                    break;
+                case 'maintenance':
+                    fatPercentage = 0.25;
+                    break;
+                case 'bulk':
+                    fatPercentage = 0.22;
+                    break;
+            }
+            
+            const fatCals = calories * fatPercentage;
+            const fat = Math.round(fatCals / 9);
+            
+            // Remaining calories go to carbs
+            const remainingCals = calories - proteinCals - fatCals;
+            const carbs = Math.round(remainingCals / 4);
+            
+            return {
+                protein: protein,
+                fat: fat,
+                carbs: carbs
+            };
+        }
+    </script>
+</body>
+</html>
