@@ -360,6 +360,10 @@
                                 <span>Deficit:</span>
                                 <span id="fatLossDeficit">-</span>
                             </div>
+                            <div class="phase-detail">
+                                <span>Expected Loss:</span>
+                                <span id="expectedWeightLoss">-</span>
+                            </div>
                             <div class="macro-breakdown">
                                 <div class="macro-item">
                                     <span>Protein:</span>
@@ -446,8 +450,10 @@
             const weight = parseFloat(document.getElementById('weight').value);
             const height = parseInt(document.getElementById('height').value);
             const bodyFat = parseFloat(document.getElementById('bodyFat').value) || null;
+            const skeletalMuscle = parseFloat(document.getElementById('skeletalMuscle').value) || null;
             const activityLevel = parseFloat(document.getElementById('activityLevel').value);
             const trainingType = document.getElementById('trainingType').value;
+            const dietDuration = parseInt(document.getElementById('dietDuration').value);
 
             // Calculate BMR using Mifflin-St Jeor equation
             let bmr;
@@ -460,9 +466,12 @@
             // Calculate TDEE
             const tdee = bmr * activityLevel;
 
-            // Calculate lean body mass
+            // Calculate lean body mass - prioritize skeletal muscle if provided
             let lbm;
-            if (bodyFat) {
+            if (skeletalMuscle) {
+                // Skeletal muscle is about 50-60% of total lean mass
+                lbm = skeletalMuscle / 0.55; // Conservative estimate
+            } else if (bodyFat) {
                 lbm = weight * (1 - bodyFat / 100);
             } else {
                 // Estimate using Boer formula if no body fat provided
@@ -474,12 +483,18 @@
             }
 
             // Calculate protein requirements based on training type and goal
-            const proteinRequirements = getProteinRequirements(weight, lbm, trainingType);
+            const proteinRequirements = getProteinRequirements(weight, lbm, trainingType, dietDuration);
 
-            // Calculate phases
-            const fatLossCalories = Math.round(tdee * 0.8); // 20% deficit
+            // Calculate phases - adjust deficit based on diet duration
+            const deficitRate = getDeficitRate(dietDuration);
+            const fatLossCalories = Math.round(tdee * (1 - deficitRate));
             const maintenanceCalories = Math.round(tdee);
             const bulkCalories = Math.round(tdee * 1.1); // 10% surplus
+
+            // Calculate expected weight loss
+            const weeklyDeficit = (tdee - fatLossCalories) * 7;
+            const expectedWeeklyLoss = weeklyDeficit / 7700; // 7700 cal per kg
+            const totalExpectedLoss = expectedWeeklyLoss * dietDuration;
 
             // Calculate macros for each phase
             const fatLossMacros = calculateMacros(fatLossCalories, proteinRequirements.fatLoss, weight, 'cut');
@@ -494,6 +509,8 @@
             // Fat Loss Phase
             document.getElementById('fatLossCalories').textContent = fatLossCalories + ' cal';
             document.getElementById('fatLossDeficit').textContent = Math.round(tdee - fatLossCalories) + ' cal';
+            document.getElementById('expectedWeightLoss').textContent = 
+                expectedWeeklyLoss.toFixed(1) + ' kg/week (' + totalExpectedLoss.toFixed(1) + ' kg total)';
             document.getElementById('fatLossProtein').textContent = fatLossMacros.protein + 'g (' + Math.round(fatLossMacros.protein * 4) + ' cal)';
             document.getElementById('fatLossFat').textContent = fatLossMacros.fat + 'g (' + Math.round(fatLossMacros.fat * 9) + ' cal)';
             document.getElementById('fatLossCarbs').textContent = fatLossMacros.carbs + 'g (' + Math.round(fatLossMacros.carbs * 4) + ' cal)';
@@ -515,33 +532,49 @@
             document.getElementById('results').style.display = 'block';
         }
 
-        function getProteinRequirements(weight, lbm, trainingType) {
+        function getProteinRequirements(weight, lbm, trainingType, dietDuration) {
             let base = {
-                fatLoss: 2.0,      // Higher protein during cut to preserve muscle
-                maintenance: 1.6,   // Moderate protein for maintenance
-                bulk: 1.8          // Slightly higher for muscle building
+                fatLoss: 1.6,      // Moderate protein during cut to preserve muscle
+                maintenance: 1.2,   // Standard protein for maintenance
+                bulk: 1.4          // Slightly higher for muscle building
             };
 
             // Adjust based on training type
             switch(trainingType) {
                 case 'strength':
                 case 'powerlifting':
-                    base.fatLoss = 2.2;
-                    base.bulk = 2.0;
-                    break;
-                case 'bodybuilding':
-                    base.fatLoss = 2.4;
-                    base.bulk = 2.2;
-                    break;
-                case 'endurance':
                     base.fatLoss = 1.8;
                     base.maintenance = 1.4;
                     base.bulk = 1.6;
                     break;
-                case 'crossfit':
-                    base.fatLoss = 2.0;
-                    base.bulk = 1.8;
+                case 'bodybuilding':
+                    base.fatLoss = 1.8;
+                    base.maintenance = 1.4;
+                    base.bulk = 1.6;
                     break;
+                case 'endurance':
+                    base.fatLoss = 1.4;
+                    base.maintenance = 1.0;
+                    base.bulk = 1.2;
+                    break;
+                case 'crossfit':
+                    base.fatLoss = 1.6;
+                    base.maintenance = 1.3;
+                    base.bulk = 1.5;
+                    break;
+                case 'general':
+                    base.fatLoss = 1.4;
+                    base.maintenance = 1.0;
+                    base.bulk = 1.3;
+                    break;
+            }
+
+            // Small increase for longer diets to preserve muscle
+            if (dietDuration >= 12) {
+                base.fatLoss += 0.1;
+            }
+            if (dietDuration >= 16) {
+                base.fatLoss += 0.1;
             }
 
             return {
@@ -549,6 +582,24 @@
                 maintenance: Math.round(weight * base.maintenance),
                 bulk: Math.round(weight * base.bulk)
             };
+        }
+
+        function getDeficitRate(duration) {
+            // Adjust deficit based on diet duration for sustainable fat loss
+            switch(duration) {
+                case 6:
+                    return 0.25; // 25% deficit - aggressive short cut
+                case 8:
+                    return 0.20; // 20% deficit - standard
+                case 12:
+                    return 0.18; // 18% deficit - moderate
+                case 16:
+                    return 0.15; // 15% deficit - conservative
+                case 20:
+                    return 0.12; // 12% deficit - slow cut
+                default:
+                    return 0.20;
+            }
         }
 
         function calculateMacros(calories, protein, weight, phase) {
